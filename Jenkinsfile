@@ -69,25 +69,25 @@ pipeline {
 		
         stage('Build and Deploy Code') {
 
-			when {
-			     branch 'develop'
-		    }
+	    when {
+		branch 'develop'
+		}
 		
             steps {
                 sh """
                     echo "Building Artifact"
                 """
 	    
-                script {
-			        docker_image = docker.build("${env.DOCKER_IMAGE}",'-f ./Dockerfile .')
-		        }
+            script {
+	        docker_image = docker.build("${env.DOCKER_IMAGE}",'-f ./Dockerfile .')       
+		}
 		
-			    sh """
-                    echo "Deploying Code"
-                """
+	    sh """
+                echo "Deploying Code"
+            """
 
-				sh "docker rm newApp"
-			    sh "docker run -d -p 8888:8080 --name newApp ${DOCKER_IMAGE}"
+            sh "docker rm newApp"
+	    sh "docker run -d -p 8888:8080 --name newApp ${DOCKER_IMAGE}"
                 
             }
         }
