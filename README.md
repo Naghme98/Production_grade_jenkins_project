@@ -1,6 +1,6 @@
 # Jenkins multi-branch pipeline
 
-##Introduction:
+## Introduction:
 
 In the past, about 20 years ago, when IT companies wanted to develop, create or invent a new product, they used to have two main groups of people. The One who develops it and the other one who tests and deploys it in the real world. They would work in the water-flow style of product development. As it is understandable, this process was time-consuming, slow, and not scalable for the growing needs of the technology industry. 
 As a matter of necessity, in 2007-2008 Devops was invented and companies started moving toward using this layout for their project management. DevOps is a set of practices that combines software development and IT operations. CI/CD is a DevOps technique that simplifies Agile development by using the right tools to speed up deployment.
@@ -13,7 +13,7 @@ Jenkins supports multi-node operations. By the means of the multi-node, we can s
 
 Following the instructions inside “jenkins.io”, I was able to install Jenkins on a Ubuntu server as my controller. After that, I created a new Linux machine using AWS services and assigned it as my agent.
 
-Managing an agent:
+- Managing an agent:
 I went through these steps:
 Manage Jenkins -> Manage Nodes and Cloud -> New Node
 
@@ -31,7 +31,7 @@ Because the controller tried to connect to the agent through ssh, I needed to ad
 <i>Figure 2: Updating Credentials for connecting to agent</i>
 </p>
  
-Creating a Maven project:
+### 1. Creating a Maven project:
 For this project, I simply created a HelloWorld Maven project and used it to apply steps of the pipeline and check if everything is right. 
 
 ![image](https://user-images.githubusercontent.com/45916098/177034152-cd40ce02-c55e-41e6-a607-80a18d86615c.png)
@@ -40,8 +40,8 @@ For this project, I simply created a HelloWorld Maven project and used it to app
 <i>Figure 3: Sample Maven project</i>
 </p>
 
-### 1. Setting up SCM:
-    For this part, I used Github as my SCM. For making the proper connections from Jenkins to Github and vice versa, I had to manage “Github Webhook” and “Jenkins credential configuration”. Webhooks allow you to build or set up integrations and I needed for receiving the updates on the repository. 
+### 2. Setting up SCM:
+For this part, I used Github as my SCM. For making the proper connections from Jenkins to Github and vice versa, I had to manage “Github Webhook” and “Jenkins credential configuration”. Webhooks allow you to build or set up integrations and I needed for receiving the updates on the repository. 
 
 I went through these steps for Webhook:
 Going to the repository -> Settings -> Webhooks -> Add webhook 
@@ -64,8 +64,8 @@ Settings -> Developer settings -> Personal access tokens
 <i>Figure 5: Github Personal Access Token</i>
 </p>
 
-### 2. Creating the Multi-branch pipeline in Jenkins: 
-    A DevOps pipeline is a set of automated processes and tools that allows both developers and operations professionals to work cohesively to build and deploy code to a production environment.
+### 3. Creating the Multi-branch pipeline in Jenkins: 
+A DevOps pipeline is a set of automated processes and tools that allows both developers and operations professionals to work cohesively to build and deploy code to a production environment.
 
 Jenkins has different options for doing the CI/CD jobs like Freestyle, Pipeline, Multibranch Pipeline, etc. So, I went through creating a Multibranch Pipeline for this project. 
 I had to add my repository address for the “Repository Https URL” part in the configurations and also set the strategy to “Discover branch” to “Only branches that are also field as PR”. Because my repository was public, there was no need to specify any credentials, but for private ones, we can use the credentials we created before.
@@ -76,15 +76,15 @@ I had to add my repository address for the “Repository Https URL” part in th
 <i>Figure 6: Multibranch pipeline configurations</i>
 </p>
 
-### 3. Managing the plugins: 
-    The power of Jenkins is that it supports lots of plugins. In this project I needed some plugins to be installed and configured:
-Blue Ocean: A graphical interface for the pipeline jobs.
-Maven (One of my main problems was after installing this plugin. You need to go through “Manage Jenkins -> Global Tool Configuration -> Maven -> click on Maven installation -> give a name to it and select to auto download it)
-Github plugin
-Github pull request 
-Docker pipeline (Not docker plugin -- be careful)
+### 4. Managing the plugins: 
+The power of Jenkins is that it supports lots of plugins. In this project I needed some plugins to be installed and configured:
+- Blue Ocean: A graphical interface for the pipeline jobs.
+- Maven (One of my main problems was after installing this plugin. You need to go through “Manage Jenkins -> Global Tool Configuration -> Maven -> click on Maven installation -> give a name to it and select to auto download it)
+- Github plugin
+- Github pull request 
+- Docker pipeline (Not docker plugin -- be careful)
 
-### 4. Project Scenario: 
+### 5. Project Scenario: 
     
 ![image](https://user-images.githubusercontent.com/45916098/177034201-68715acd-b44c-47d5-92ec-cd519911f020.png)    
 
@@ -93,24 +93,24 @@ Docker pipeline (Not docker plugin -- be careful)
 </p>
 
 I had three branches:
-Feature: Simply developers would commit their codes in this branch and whenever they want to merge it with the production, they would create a Pull Request (PR) to the branch Develop.
-Develop: This branch would be handled by seniors e.g. When they can merge the PRs from Feature and also create PR for the Main branch.
-Main: This is the actual branch that my pipeline will check for creating the new version of the product. 
+- Feature: Simply developers would commit their codes in this branch and whenever they want to merge it with the production, they would create a Pull Request (PR) to the branch Develop.
+- Develop: This branch would be handled by seniors e.g. When they can merge the PRs from Feature and also create PR for the Main branch.
+- Main: This is the actual branch that my pipeline will check for creating the new version of the product. 
 
 After Github receives any PR, it will use the configured Webhook to let Jenkins know there is some change there and probably there is a need for action.
 In the next step, Jenkins will create the SSH connection to the Agent and run the pipeline code. The second step would be performing the actions defined in the code on this agent machine.
 
 
 
-### 5. Pipeline code and stages:
+### 6. Pipeline code and stages:
 
-    My pipeline consists of 6 stages. The last step is just only for the PRs on the Main branch (from Develop to Main) and will not be activated from the Feature branch.
-Cleanup Workspace
-Code Checkout: Checking out to the current Github repository’s Main branch (It needs to read this directory)
-Unit test: Running some defined Unit tests using Maven
-Code Analysis: This step is just a simple echo (Wasn’t part of my project )
-Packaging: It will use Maven to create a .jar file for the new code
-Building and Deploying the code: In this step first, it will delete the previous running container, and then, using the new .jar file, it will create a Docker image and run this Container.
+My pipeline consists of 6 stages. The last step is just only for the PRs on the Main branch (from Develop to Main) and will not be activated from the Feature branch.
+- Cleanup Workspace
+- Code Checkout: Checking out to the current Github repository’s Main branch (It needs to read this directory)
+- Unit test: Running some defined Unit tests using Maven
+- Code Analysis: This step is just a simple echo (Wasn’t part of my project )
+- Packaging: It will use Maven to create a .jar file for the new code
+- Building and Deploying the code: In this step first, it will delete the previous running container, and then, using the new .jar file, it will create a Docker image and run this Container.
 
 
 
@@ -148,7 +148,7 @@ In these stages (Figure 10), I used two commands from “mvn” to run the tests
 ![image](https://user-images.githubusercontent.com/45916098/177034302-8721cb67-22f9-41ed-bf71-bf7e1e69c92c.png)
 
 <p align=center>
-<i>Figure 11: Last stage of pipeline code<i>
+<i>Figure 11: Last stage of pipeline code</i>
 </p>
 
 In the last stage, it checks if only the branch is “Develop” it will start it’s work. Otherwise, it would ignore this part.
@@ -168,7 +168,7 @@ I tried to do two pull requests, one from branch Feature to Develop and the othe
  
 These are the outputs:
 
-Feature -> Develop:
+- Feature -> Develop:
 
 ![image](https://user-images.githubusercontent.com/45916098/177034313-259a51da-8873-4894-820a-0a653f7952c4.png)
 <p align=center>
@@ -192,7 +192,7 @@ Also you can go to the Console output of this job and see the exact details.
 
 
 
-Develop -> Main:
+- Develop -> Main:
     
 ![image](https://user-images.githubusercontent.com/45916098/177034341-6544b5e1-6e3c-44d9-8cfe-c50b7ebcbab9.png)
 <p align=center>
